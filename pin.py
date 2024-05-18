@@ -1,3 +1,4 @@
+import io
 import os
 import asyncio
 import aiohttp
@@ -9,17 +10,15 @@ from pyrogram import Client, filters
 from concurrent.futures import ThreadPoolExecutor
 from pyrogram.errors import FloodWait
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize the bot
 API_ID = '12799559'
 API_HASH = '077254e69d93d08357f25bb5f4504580'
 BOT_TOKEN = '6055798094:AAEAGxwAP55aB-jO5sq0FDCFzOSQdNnYMqQ'
 
 app = Client("pinterest_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
-executor = ThreadPoolExecutor(max_workers=100)  # Adjust based on your server's capacity
+executor = ThreadPoolExecutor(max_workers=100)  
 
 def expand_shortened_url(url):
     try:
@@ -35,16 +34,10 @@ def get_pinterest_video_url(pin_url):
     try:
         response = requests.get(pin_url, allow_redirects=True)
         soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Log the response content for debugging
-        logger.info(f"Response content: {soup.prettify()[:2000]}")  # Log the first 2000 characters
-        
-        # Look for <script> tags containing JSON-LD data
+        logger.info(f"Response content: {soup.prettify()[:2000]}") 
         for script in soup.find_all('script', type='application/ld+json'):
             json_data = json.loads(script.string)
-            logger.info(f"Found JSON-LD script: {json.dumps(json_data, indent=2)[:1000]}")  # Log the first 1000 characters
-
-            # Check if the JSON data contains a VideoObject with a video URL
+            logger.info(f"Found JSON-LD script: {json.dumps(json_data, indent=2)[:1000]}")
             if '@type' in json_data and json_data['@type'] == 'VideoObject':
                 video_url = json_data['contentUrl']
                 logger.info(f"Found video URL: {video_url}")
@@ -60,7 +53,6 @@ async def fetch_video(session, url):
     async with session.get(url) as response:
         return await response.read()
         
-import io
 
 async def download_and_send_video(client, message, url):
     try:
@@ -77,7 +69,7 @@ async def download_and_send_video(client, message, url):
         await client.send_video(
             chat_id=message.chat.id,
             video=video_io,
-            file_name="video.mp4",  # Custom file name
+            file_name="video.mp4",  
             caption="Here is your video!"
         )
         
