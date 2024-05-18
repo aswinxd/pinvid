@@ -36,7 +36,7 @@ async def handle_start_command(client, message):
             InlineKeyboardButton("Updates", url="https://codecbots.t.me"),
         ],
         [
-            InlineKeyboardButton("Contact Developer", url="https://drxew.t.me")
+            InlineKeyboardButton("Contact Developer", url="https://t.me/CodecBots/4")
         ]
     ]
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
