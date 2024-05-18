@@ -120,4 +120,5 @@ async def handle_start_command(client, message):
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
     
 if __name__ == "__main__":
+    logger.info("Starting bot")
     app.run()
