@@ -99,6 +99,7 @@ async def handle_message(client, message):
     else:
         await message.reply_text("Please provide a valid Pinterest video link.")
 
+#pp.on_message(filters.command("start") & filters.private)
 @app.on_message(filters.command("start") & filters.private)
 async def handle_start_command(client, message):
     instructions = (
@@ -117,7 +118,6 @@ async def handle_start_command(client, message):
         ]
     ]
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
-
     
 if __name__ == "__main__":
     app.run()
