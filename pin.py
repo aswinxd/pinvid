@@ -44,9 +44,9 @@ def get_pinterest_video_url(pin_url):
             json_data = json.loads(script.string)
             logger.info(f"Found JSON-LD script: {json.dumps(json_data, indent=2)[:1000]}")  # Log the first 1000 characters
 
-            # Check if the JSON data contains video information
-            if 'video' in json_data:
-                video_url = json_data['video']['contentUrl']
+            # Check if the JSON data contains a VideoObject with a video URL
+            if '@type' in json_data and json_data['@type'] == 'VideoObject':
+                video_url = json_data['contentUrl']
                 logger.info(f"Found video URL: {video_url}")
                 return video_url
         
