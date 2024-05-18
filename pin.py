@@ -12,9 +12,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Initialize the bot
-API_ID = 'YOUR_API_ID'
-API_HASH = 'YOUR_API_HASH'
-BOT_TOKEN = 'YOUR_BOT_TOKEN'
+API_ID = '12799559'
+API_HASH = '077254e69d93d08357f25bb5f4504580'
+BOT_TOKEN = '6055798094:AAEAGxwAP55aB-jO5sq0FDCFzOSQdNnYMqQ'
 
 app = Client("pinterest_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 executor = ThreadPoolExecutor(max_workers=100)  # Adjust based on your server's capacity
