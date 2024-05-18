@@ -71,6 +71,5 @@ async def error_handler(client, message, error):
         await client.send_message(message.chat.id, "I'm experiencing high load. Please try again later.")
     else:
         logger.error(f"Unhandled error: {error}")
-
 if __name__ == "__main__":
     app.run()
