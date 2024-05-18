@@ -99,30 +99,24 @@ async def handle_message(client, message):
         await message.reply_text("Please provide a valid Pinterest video link.")
     
 
+@app.on_message(filters.command("start") & filters.private)
 async def handle_start_command(client, message):
     instructions = (
-        "Welcome! This is **Pinterest Downloader Bot**. This bot can download videos from pinterst\n"
-        "•Send Pinterest video link bot will download it and send you\n"
-        "•If your face any issues please contact support chat so developers can fix your issue\n"
-        "•We don't recommend adding this bot to groups even though you can add it and use it in groups\n"
-        
+        "Welcome! This is **Pinterest Downloader Bot**. This bot can download videos from Pinterest.\n"
+        "• Send Pinterest video link bot will download it and send you.\n"
+        "• If you face any issues, please contact support chat so developers can fix your issue.\n"
+        "• We don't recommend adding this bot to groups even though you can add it and use it in groups.\n"
     )
     buttons = [
         [
-            InlineKeyboardButton("Support Group", url="codecarchive.t.me"),
-            InlineKeyboardButton("Updates", url="codecbots.t.me"),
+            InlineKeyboardButton("Support Group", url="https://codecarchive.t.me"),
+            InlineKeyboardButton("Updates", url="https://codecbots.t.me"),
         ],
         [
-            InlineKeyboardButton("Contact Developer", url="drxew.t.me")
+            InlineKeyboardButton("Contact Developer", url="https://drxew.t.me")
         ]
     ]
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
-
-async with TelegramClient('bot_session', api_id, api_hash) as client:  
-        await client.start(bot_token=bot_token)
-    
-app.on_message(filters.command("start"))(handle_start_command)
-
 
 if __name__ == "__main__":
     app.run()
