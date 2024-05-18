@@ -59,7 +59,7 @@ async def download_and_send_video(client, message, url):
 @app.on_message(filters.text & filters.private)
 async def handle_message(client, message):
     url = message.text
-    if "pinterest.com" in url:
+    if "pin.it" in url:
         try:
             asyncio.create_task(download_and_send_video(client, message, url))
         except FloodWait as e:
