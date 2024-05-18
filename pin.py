@@ -17,7 +17,7 @@ API_HASH = '077254e69d93d08357f25bb5f4504580'
 BOT_TOKEN = '6055798094:AAEAGxwAP55aB-jO5sq0FDCFzOSQdNnYMqQ'
 
 app = Client("pinterest_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
-executor = ThreadPoolExecutor(max_workers=100)  # Adjust based on your server's capacity
+executor = ThreadPoolExecutor(max_workers=50)  # Adjust based on your server's capacity
 
 async def fetch_video(session, url):
     async with session.get(url) as response:
@@ -70,7 +70,7 @@ async def handle_message(client, message):
             await message.reply_text("An error occurred while processing your request.")
     else:
         await message.reply_text("Please provide a valid Pinterest video link.")
-@app.on_errors()
+#@app.on_errors()
 async def error_handler(client, message, error):
     if isinstance(error, FloodWait):
         await asyncio.sleep(error.x)
