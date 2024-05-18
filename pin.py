@@ -60,6 +60,8 @@ async def fetch_video(session, url):
     async with session.get(url) as response:
         return await response.read()
 
+import io
+
 async def download_and_send_video(client, message, url):
     try:
         video_url = await asyncio.get_event_loop().run_in_executor(executor, get_pinterest_video_url, url)
@@ -70,18 +72,15 @@ async def download_and_send_video(client, message, url):
         async with aiohttp.ClientSession() as session:
             video_data = await fetch_video(session, video_url)
         
-        video_path = f"{message.message_id}.mp4"
-        with open(video_path, 'wb') as file:
-            file.write(video_data)
+        video_io = io.BytesIO(video_data)
         
-        await client.send_video(message.chat.id, video=video_path, caption="Here is your video!")
+        await client.send_video(message.chat.id, video=video_io, caption="Here is your video!")
         
-        os.remove(video_path)
     except Exception as e:
         logger.error(f"Error in download_and_send_video: {e}")
         await message.reply_text("An error occurred while processing your request.")
     finally:
-        await asyncio.sleep(0.1)  # Short delay to prevent flooding
+        await asyncio.sleep(0.1)
 
 @app.on_message(filters.text & filters.private)
 async def handle_message(client, message):
