@@ -54,8 +54,11 @@ async def download_and_send_video(client, message, url):
         logger.error(f"Error in download_and_send_video: {e}")
         await message.reply_text("An error occurred while processing your request.")
     finally:
-        await asyncio.sleep(0.1)  # Short delay to prevent flooding
-
+        await asyncio.sleep(0.1)
+        # Short delay to prevent flooding
+def expand_shortened_url(url):
+    response = requests.head(url, allow_redirects=True)
+    return response.url
 @app.on_message(filters.text & filters.private)
 async def handle_message(client, message):
     url = message.text
