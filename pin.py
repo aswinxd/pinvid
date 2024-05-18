@@ -59,7 +59,7 @@ def get_pinterest_video_url(pin_url):
 async def fetch_video(session, url):
     async with session.get(url) as response:
         return await response.read()
-
+        
 import io
 
 async def download_and_send_video(client, message, url):
@@ -74,7 +74,12 @@ async def download_and_send_video(client, message, url):
         
         video_io = io.BytesIO(video_data)
         
-        await client.send_video(message.chat.id, video=video_io, caption="Here is your video!")
+        await client.send_video(
+            chat_id=message.chat.id,
+            video=video_io,
+            file_name="video.mp4",  # Custom file name
+            caption="Here is your video!"
+        )
         
     except Exception as e:
         logger.error(f"Error in download_and_send_video: {e}")
