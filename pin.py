@@ -29,6 +29,7 @@ def expand_shortened_url(url):
     except Exception as e:
         logger.error(f"Error expanding URL: {e}")
         return url
+
 def get_pinterest_video_url(pin_url):
     try:
         response = requests.get(pin_url, allow_redirects=True)
@@ -37,25 +38,26 @@ def get_pinterest_video_url(pin_url):
         # Log the response content for debugging
         logger.info(f"Response content: {soup.prettify()[:2000]}")  # Log the first 2000 characters
         
-        # Try to find video tag in other places if the above didn't work
-        for script in soup.find_all('script'):
-            if 'video_url' in script.text:
-                logger.info(f"Found potential video script: {script.text[:500]}")
-                # Extract the JSON data from the script content
-                script_content = script.text
-                start_index = script_content.find('{')
-                end_index = script_content.rfind('}') + 1
-                json_content = script_content[start_index:end_index]
-                video_data = json.loads(json_content)
-                video_url = video_data.get('video_url', None)
-                if video_url:
-                    return video_url
-                
+        # Look for <script> tags containing JSON-LD data
+        for script in soup.find_all('script', type='application/ld+json'):
+            json_data = json.loads(script.string)
+            logger.info(f"Found JSON-LD script: {json.dumps(json_data, indent=2)[:1000]}")  # Log the first 1000 characters
+
+            # Check if the JSON data contains video information
+            if 'video' in json_data:
+                video_url = json_data['video']['contentUrl']
+                logger.info(f"Found video URL: {video_url}")
+                return video_url
+        
     except Exception as e:
         logger.error(f"Error getting Pinterest video URL: {e}")
     
     logger.warning("No video URL found.")
     return None
+
+async def fetch_video(session, url):
+    async with session.get(url) as response:
+        return await response.read()
 
 async def download_and_send_video(client, message, url):
     try:
@@ -79,7 +81,6 @@ async def download_and_send_video(client, message, url):
         await message.reply_text("An error occurred while processing your request.")
     finally:
         await asyncio.sleep(0.1)  # Short delay to prevent flooding
-                
 
 @app.on_message(filters.text & filters.private)
 async def handle_message(client, message):
