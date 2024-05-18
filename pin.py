@@ -97,7 +97,7 @@ async def handle_message(client, message):
             logger.error(f"Unhandled error: {e}")
             await message.reply_text("An error occurred while processing your request.")
     else:
-        await message.reply_text("Please provide a valid Pinterest video link."
+        await message.reply_text("Please provide a valid Pinterest video link.")
 
 @app.on_message(filters.command("start") & filters.private)
 async def handle_start_command(client, message):
