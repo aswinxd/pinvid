@@ -97,15 +97,14 @@ async def handle_message(client, message):
             logger.error(f"Unhandled error: {e}")
             await message.reply_text("An error occurred while processing your request.")
     else:
-        await message.reply_text("Please provide a valid Pinterest video link.")
-    
+        await message.reply_text("Please provide a valid Pinterest video link."
+
 @app.on_message(filters.command("start") & filters.private)
 async def handle_start_command(client, message):
-    logger.info("Received /start command")
     instructions = (
         "Welcome! This is **Pinterest Downloader Bot**. This bot can download videos from Pinterest.\n"
-        "• Send Pinterest video link bot will download it and send you.\n"
-        "• If you face any issues, please contact support chat so developers can fix your issue.\n"
+        "• Send Pinterest video link, and the bot will download it and send it to you.\n"
+        "• If you face any issues, please contact the support chat so developers can fix your issue.\n"
         "• We don't recommend adding this bot to groups even though you can add it and use it in groups.\n"
     )
     buttons = [
@@ -118,9 +117,7 @@ async def handle_start_command(client, message):
         ]
     ]
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
-        
-app.add_handler(MessageHandler(handle_start_command, filters.command("start") & filters.private))
+
     
 if __name__ == "__main__":
-    logger.info("Codec Pinterest Bot starting")
     app.run()
