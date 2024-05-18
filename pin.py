@@ -22,6 +22,26 @@ BOT_TOKEN = '6055798094:AAEAGxwAP55aB-jO5sq0FDCFzOSQdNnYMqQ'
 app = Client("pinterest_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 executor = ThreadPoolExecutor(max_workers=100)  
 
+@app.on_message(filters.command("start"))
+async def handle_start_command(client, message):
+    instructions = (
+        "Welcome! This is **Pinterest Downloader Bot**. This bot can download videos from Pinterest.\n"
+        "• Send Pinterest video link, and the bot will download it and send it to you.\n"
+        "• If you face any issues, please contact the support chat so developers can fix your issue.\n"
+        "• We don't recommend adding this bot to groups even though you can add it and use it in groups.\n"
+    )
+    buttons = [
+        [
+            InlineKeyboardButton("Support Group", url="https://codecarchive.t.me"),
+            InlineKeyboardButton("Updates", url="https://codecbots.t.me"),
+        ],
+        [
+            InlineKeyboardButton("Contact Developer", url="https://drxew.t.me")
+        ]
+    ]
+    await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
+    
+
 def expand_shortened_url(url):
     try:
         response = requests.head(url, allow_redirects=True)
@@ -99,24 +119,6 @@ async def handle_message(client, message):
     else:
         await message.reply_text("Please provide a valid Pinterest video link.")
 
-@app.on_message(filters.command("start"))
-async def handle_start_command(client, message):
-    instructions = (
-        "Welcome! This is **Pinterest Downloader Bot**. This bot can download videos from Pinterest.\n"
-        "• Send Pinterest video link, and the bot will download it and send it to you.\n"
-        "• If you face any issues, please contact the support chat so developers can fix your issue.\n"
-        "• We don't recommend adding this bot to groups even though you can add it and use it in groups.\n"
-    )
-    buttons = [
-        [
-            InlineKeyboardButton("Support Group", url="https://codecarchive.t.me"),
-            InlineKeyboardButton("Updates", url="https://codecbots.t.me"),
-        ],
-        [
-            InlineKeyboardButton("Contact Developer", url="https://drxew.t.me")
-        ]
-    ]
-    await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
-    
+
 if __name__ == "__main__":
     app.run()
