@@ -99,8 +99,7 @@ async def handle_message(client, message):
     else:
         await message.reply_text("Please provide a valid Pinterest video link.")
 
-#pp.on_message(filters.command("start") & filters.private)
-@app.on_message(filters.command("start") & filters.private)
+@app.on_message(filters.command("start"))
 async def handle_start_command(client, message):
     instructions = (
         "Welcome! This is **Pinterest Downloader Bot**. This bot can download videos from Pinterest.\n"
