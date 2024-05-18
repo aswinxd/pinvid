@@ -56,14 +56,19 @@ async def download_and_send_video(client, message, url):
     finally:
         await asyncio.sleep(0.1)
         # Short delay to prevent flooding
+
 def expand_shortened_url(url):
     response = requests.head(url, allow_redirects=True)
     return response.url
+    
 @app.on_message(filters.text & filters.private)
 async def handle_message(client, message):
     url = message.text
-    if "pin.it" in url:
+    if "pinterest.com" in url or "pin.it" in url:
         try:
+            if "pin.it" in url:
+                url = await asyncio.get_event_loop().run_in_executor(executor, expand_shortened_url, url)
+            
             asyncio.create_task(download_and_send_video(client, message, url))
         except FloodWait as e:
             logger.warning(f"FloodWait error: Waiting for {e.x} seconds")
@@ -73,7 +78,7 @@ async def handle_message(client, message):
             await message.reply_text("An error occurred while processing your request.")
     else:
         await message.reply_text("Please provide a valid Pinterest video link.")
-#@app.on_errors()
+        
 async def error_handler(client, message, error):
     if isinstance(error, FloodWait):
         await asyncio.sleep(error.x)
