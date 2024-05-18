@@ -96,6 +96,24 @@ async def handle_message(client, message):
             await message.reply_text("An error occurred while processing your request.")
     else:
         await message.reply_text("Please provide a valid Pinterest video link.")
+        async def handle_start_command(event):
+    instructions = (
+        "Welcome! This is AntiBioLink. Here are some commands you can use:\n"
+        "/add <user_id> - Add a user ID to the whitelist\n"
+        "/removeuser <user_id> - Remove a user ID from the whitelist\n"
+        "/start - Show this help message\n"
+        "\n"
+        "Features:\n"
+        "1. Automatically checks new users' bios for links and kicks them if a link is found.\n"
+        "2. Caches user bio checks to avoid repetitive checks within an hour.\n"
+        "3. Handles messages in batches to optimize performance and reduce load.\n"
+        "4. Sends notifications to users when they are kicked due to having links in their bio.\n"
+        "~**ADD TO YOUR GROUP AND PROMOTE AS ADMIN WITH BAN PERMISSION.**\n"
+    )
+    buttons = [
+        [types.KeyboardButtonUrl("Support", "https://xenonsupportchat.t.me"), types.KeyboardButtonUrl("Updates", "https://xenonbots.t.me")]
+    ]
+    await event.respond(instructions, buttons=buttons)
 
 if __name__ == "__main__":
     app.run()
