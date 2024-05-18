@@ -9,7 +9,8 @@ from bs4 import BeautifulSoup
 from pyrogram import Client, filters
 from concurrent.futures import ThreadPoolExecutor
 from pyrogram.errors import FloodWait
-
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -96,24 +97,31 @@ async def handle_message(client, message):
             await message.reply_text("An error occurred while processing your request.")
     else:
         await message.reply_text("Please provide a valid Pinterest video link.")
-        async def handle_start_command(event):
+    
+# Function to handle the /start command
+async def handle_start_command(client, message):
     instructions = (
-        "Welcome! This is AntiBioLink. Here are some commands you can use:\n"
-        "/add <user_id> - Add a user ID to the whitelist\n"
-        "/removeuser <user_id> - Remove a user ID from the whitelist\n"
-        "/start - Show this help message\n"
-        "\n"
-        "Features:\n"
-        "1. Automatically checks new users' bios for links and kicks them if a link is found.\n"
-        "2. Caches user bio checks to avoid repetitive checks within an hour.\n"
-        "3. Handles messages in batches to optimize performance and reduce load.\n"
-        "4. Sends notifications to users when they are kicked due to having links in their bio.\n"
-        "~**ADD TO YOUR GROUP AND PROMOTE AS ADMIN WITH BAN PERMISSION.**\n"
+        "Welcome! This is **Pinterest Downloader Bot**. This bot can download videos from pinterst\n"
+        "•Send Pinterest video link bot will download it and send you\n"
+        "•If your face any issues please contact support chat so developers can fix your issue\n"
+        "•We don't recommend adding this bot to groups even though you can add it and use it in groups\n"
+        
     )
     buttons = [
-        [types.KeyboardButtonUrl("Support", "https://xenonsupportchat.t.me"), types.KeyboardButtonUrl("Updates", "https://xenonbots.t.me")]
+        [
+            InlineKeyboardButton("Support Group", url="codecarchive.t.me"),
+            InlineKeyboardButton("Updates", url="codecbots.t.me"),
+        ],
+        [
+            InlineKeyboardButton("Contact Developer", url="drxew.t.me")
+        ]
     ]
-    await event.respond(instructions, buttons=buttons)
+    await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
+
+
+# Register the /start command handler
+app.on_message(filters.command("start"))(handle_start_command)
+
 
 if __name__ == "__main__":
     app.run()
