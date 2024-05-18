@@ -101,6 +101,7 @@ async def handle_message(client, message):
 
 @app.on_message(filters.command("start") & filters.private)
 async def handle_start_command(client, message):
+    logger.info("Received /start command")
     instructions = (
         "Welcome! This is **Pinterest Downloader Bot**. This bot can download videos from Pinterest.\n"
         "• Send Pinterest video link bot will download it and send you.\n"
@@ -117,6 +118,6 @@ async def handle_start_command(client, message):
         ]
     ]
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
-
+    
 if __name__ == "__main__":
     app.run()
