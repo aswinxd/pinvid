@@ -118,7 +118,7 @@ async def handle_start_command(client, message):
         ]
     ]
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
-
+        
 app.add_handler(MessageHandler(handle_start_command, filters.command("start") & filters.private))
     
 if __name__ == "__main__":
