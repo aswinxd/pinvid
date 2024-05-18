@@ -7,6 +7,7 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 from pyrogram import Client, filters
+from pyrogram.handlers import MessageHandler
 from concurrent.futures import ThreadPoolExecutor
 from pyrogram.errors import FloodWait
 from pyrogram import Client, filters
@@ -117,6 +118,8 @@ async def handle_start_command(client, message):
         ]
     ]
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
+
+app.add_handler(MessageHandler(handle_start_command, filters.command("start") & filters.private))
     
 if __name__ == "__main__":
     logger.info("Codec Pinterest Bot starting")
