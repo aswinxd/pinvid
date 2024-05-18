@@ -98,7 +98,7 @@ async def handle_message(client, message):
     else:
         await message.reply_text("Please provide a valid Pinterest video link.")
     
-# Function to handle the /start command
+
 async def handle_start_command(client, message):
     instructions = (
         "Welcome! This is **Pinterest Downloader Bot**. This bot can download videos from pinterst\n"
@@ -119,7 +119,6 @@ async def handle_start_command(client, message):
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
 
 
-# Register the /start command handler
 app.on_message(filters.command("start"))(handle_start_command)
 
 
