@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 API_ID = '12799559'
 API_HASH = '077254e69d93d08357f25bb5f4504580'
-BOT_TOKEN = '6055798094:AAEAGxwAP55aB-jO5sq0FDCFzOSQdNnYMqQ'
+BOT_TOKEN = '6525647702:AAEcBZ4z-nkG161VkOPOQOFsNidoao-jwHw'
 
 app = Client("pinterest_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 executor = ThreadPoolExecutor(max_workers=100)  
