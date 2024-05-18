@@ -6,6 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 from pyrogram import Client, filters
 from concurrent.futures import ThreadPoolExecutor
+from pyrogram.errors import FloodWait
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -24,15 +25,22 @@ async def fetch_video(session, url):
         return await response.read()
 
 def get_pinterest_video_url(pin_url):
-    response = requests.get(pin_url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    
-    # Example: Finding video URL in meta tags (actual implementation may vary)
-    video_tag = soup.find('meta', property='og:video')
-    if video_tag:
-        return video_tag.get('content')
-    return None
+    try:
+        response = requests.get(pin_url, allow_redirects=True)
+        soup = BeautifulSoup(response.text, 'html.parser')
 
+        # Look for multiple possible meta tags for video URLs
+        video_tag = soup.find('meta', property='og:video') or \
+                    soup.find('meta', property='og:video:url') or \
+                    soup.find('meta', property='og:video:secure_url')
+
+        if video_tag:
+            return video_tag.get('content')
+    except Exception as e:
+        logger.error(f"Error getting Pinterest video URL: {e}")
+
+    return None
+    
 async def download_and_send_video(client, message, url):
     try:
         video_url = await asyncio.get_event_loop().run_in_executor(executor, get_pinterest_video_url, url)
@@ -58,9 +66,14 @@ async def download_and_send_video(client, message, url):
         # Short delay to prevent flooding
 
 def expand_shortened_url(url):
-    response = requests.head(url, allow_redirects=True)
-    return response.url
+    try:
+        response = requests.head(url, allow_redirects=True)
+        return response.url
+    except Exception as e:
+        logger.error(f"Error expanding URL: {e}")
+        return url
     
+#@app.on_message(filters.text & filters.private)
 @app.on_message(filters.text & filters.private)
 async def handle_message(client, message):
     url = message.text
@@ -68,7 +81,7 @@ async def handle_message(client, message):
         try:
             if "pin.it" in url:
                 url = await asyncio.get_event_loop().run_in_executor(executor, expand_shortened_url, url)
-            
+
             asyncio.create_task(download_and_send_video(client, message, url))
         except FloodWait as e:
             logger.warning(f"FloodWait error: Waiting for {e.x} seconds")
