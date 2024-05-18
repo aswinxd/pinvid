@@ -60,10 +60,16 @@ async def download_and_send_video(client, message, url):
 async def handle_message(client, message):
     url = message.text
     if "pinterest.com" in url:
-        asyncio.create_task(download_and_send_video(client, message, url))
+        try:
+            asyncio.create_task(download_and_send_video(client, message, url))
+        except FloodWait as e:
+            logger.warning(f"FloodWait error: Waiting for {e.x} seconds")
+            await asyncio.sleep(e.x)
+        except Exception as e:
+            logger.error(f"Unhandled error: {e}")
+            await message.reply_text("An error occurred while processing your request.")
     else:
         await message.reply_text("Please provide a valid Pinterest video link.")
-
 @app.on_errors()
 async def error_handler(client, message, error):
     if isinstance(error, FloodWait):
