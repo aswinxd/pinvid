@@ -2,8 +2,9 @@ import os
 import asyncio
 import aiohttp
 import logging
+import requests
+from bs4 import BeautifulSoup
 from pyrogram import Client, filters
-from pinterest_video_downloader import get_pinterest_video
 from concurrent.futures import ThreadPoolExecutor
 
 # Configure logging
@@ -22,9 +23,19 @@ async def fetch_video(session, url):
     async with session.get(url) as response:
         return await response.read()
 
+def get_pinterest_video_url(pin_url):
+    response = requests.get(pin_url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    # Example: Finding video URL in meta tags (actual implementation may vary)
+    video_tag = soup.find('meta', property='og:video')
+    if video_tag:
+        return video_tag.get('content')
+    return None
+
 async def download_and_send_video(client, message, url):
     try:
-        video_url = await asyncio.get_event_loop().run_in_executor(executor, get_pinterest_video, url)
+        video_url = await asyncio.get_event_loop().run_in_executor(executor, get_pinterest_video_url, url)
         if not video_url:
             await message.reply_text("Could not find a video at the provided link.")
             return
