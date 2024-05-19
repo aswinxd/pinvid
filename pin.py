@@ -12,6 +12,11 @@ from concurrent.futures import ThreadPoolExecutor
 from pyrogram.errors import FloodWait
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from git import Repo, GitCommandError, InvalidGitRepositoryError
+from datetime import datetime
+import shutil
+
+SUDOERS = [123456789, 987654321]  # Replace with actual user IDs
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
