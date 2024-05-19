@@ -134,7 +134,7 @@ async def download_and_send_video(client, message, url):
         await client.send_video(
             chat_id=message.chat.id,
             video=video_io,
-            file_name="pinterest.mkv",  
+            file_name="PinterestVideoDlBot.mp4",  
             caption="•**__Uploaded By : @PinterestVideoDlBot__**"
         )
         
