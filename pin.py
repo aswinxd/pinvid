@@ -4,7 +4,6 @@ import asyncio
 import aiohttp
 import json
 import logging
-import shutil
 import requests
 from pymongo import MongoClient
 from bs4 import BeautifulSoup
@@ -14,9 +13,6 @@ from concurrent.futures import ThreadPoolExecutor
 from pyrogram.errors import FloodWait
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from git import Repo, GitCommandError, InvalidGitRepositoryError
-from datetime import datetime
-
 
 SUDOERS = [1137799257]  
 logging.basicConfig(level=logging.INFO)
