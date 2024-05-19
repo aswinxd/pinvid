@@ -126,7 +126,7 @@ async def restart_(client, message):
     await response.edit_text(
         "Restart process started, please wait for a few seconds until the bot starts..."
     )
-    os.system(f"kill -9 {os.getpid()} && bash start")
+    os.system(f"kill -9 {os.getpid()} && python3 pin.py")
 
 @app.on_message(filters.command("broadcast") & filters.user(SUDOERS))
 async def broadcast_message(client, message):
