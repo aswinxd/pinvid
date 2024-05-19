@@ -25,9 +25,9 @@ logger = logging.getLogger(__name__)
 API_ID = '12799559'
 API_HASH = '077254e69d93d08357f25bb5f4504580'
 BOT_TOKEN = '6525647702:AAEcBZ4z-nkG161VkOPOQOFsNidoao-jwHw'
-MONGO_URI = 'your_mongodb_connection_uri'
-DATABASE_NAME = 'your_database_name'
-COLLECTION_NAME = 'Pinterest_bot'
+MONGO_URI = 'mongodb+srv://bot:bot@cluster0.8vepzds.mongodb.net/?retryWrites=true&w=majority'
+DATABASE_NAME = 'Pinterest_bot'
+COLLECTION_NAME = 'users'
 
 app = Client("pinterest_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 executor = ThreadPoolExecutor(max_workers=150)  
