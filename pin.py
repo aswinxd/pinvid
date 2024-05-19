@@ -37,14 +37,12 @@ users_collection = db[COLLECTION_NAME]
 
 @app.on_message(filters.command("start") & filters.private)
 async def handle_start_command(client, message):
-    logger.info(f"Received /start command from {message.from_user.id}")
+    logger.info(f"new user {message.from_user.id}")
     
-    # Check if the user is already in the database
     user_id = message.from_user.id
     if not users_collection.find_one({"user_id": user_id}):
         users_collection.insert_one({"user_id": user_id})
     
-    # Get the user count
     user_count = users_collection.count_documents({})
     
     instructions = (
@@ -99,7 +97,7 @@ async def update_(client, message):
     update_response = "<b>A new update is available for the bot!</b>\n\n➣ Pushing updates now\n\n<b><u>Updates:</u></b>\n\n"
     final_updates = update_response + updates
     if len(final_updates) > 4096:
-        url = "https://anonybin.org"  # Use AnonyBin or any other paste service
+        url = "https://Lucidobin.org" 
         nrs = await response.edit(
             f"<b>A new update is available for the bot!</b>\n\n➣ Pushing updates now\n\n<u><b>Updates :</b></u>\n\n<a href={url}>Check updates</a>"
         )
@@ -109,7 +107,6 @@ async def update_(client, message):
     os.system("git stash &> /dev/null && git pull")
     
     try:
-        # Add your logic to restart the bot or notify users about the update
         await response.edit(f"{nrs.text}\n\nBot updated successfully.")
     except Exception as err:
         await response.edit(f"{nrs.text}\n\nUpdate failed: {err}")
@@ -126,7 +123,7 @@ async def restart_(client, message):
     await response.edit_text(
         "Restart process started, please wait for a few seconds until the bot starts..."
     )
-    os.system(f"kill -9 {os.getpid()} && python3 pin.py")
+    os.system(f"kill -9 {os.getpid()} && python3 -m pin")
 
 @app.on_message(filters.command("broadcast") & filters.user(SUDOERS))
 async def broadcast_message(client, message):
