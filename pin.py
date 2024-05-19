@@ -128,6 +128,32 @@ async def restart_(client, message):
     )
     os.system(f"kill -9 {os.getpid()} && bash start")
 
+@app.on_message(filters.command("broadcast") & filters.user(SUDOERS))
+async def broadcast_message(client, message):
+    if message.reply_to_message:
+        broadcast_message = message.reply_to_message.text
+    else:
+        if len(message.command) < 2:
+            await message.reply_text("Usage: /broadcast <message>")
+            return
+        broadcast_message = message.text.split(None, 1)[1]
+
+    all_users = users_collection.find()
+    broadcast_count = 0
+
+    for user in all_users:
+        try:
+            await client.send_message(user['user_id'], broadcast_message)
+            broadcast_count += 1
+            await asyncio.sleep(0.1)  # To prevent hitting the flood limit
+        except FloodWait as e:
+            logger.warning(f"Hit FloodWait for {e.x} seconds.")
+            await asyncio.sleep(e.x)
+        except Exception as e:
+            logger.error(f"Error broadcasting to {user['user_id']}: {e}")
+    
+    await message.reply_text(f"Broadcast completed. Message sent to {broadcast_count} users.")
+
 def expand_shortened_url(url):
     try:
         response = requests.head(url, allow_redirects=True)
