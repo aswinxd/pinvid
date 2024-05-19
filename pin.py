@@ -46,7 +46,7 @@ async def handle_start_command(client, message):
         "• Send Pinterest video link, and the bot will download it and send it to you.\n"
         "• If you face any issues, please contact the support chat so developers can fix your issue.\n"
         "• We don't recommend adding this bot to groups even though you can add it and use it in groups.\n"
-        f"• Queue request on bot: {user_count}\n"
+        f"• Current queue requests on bot: {user_count}\n"
     )
     buttons = [
         [
@@ -54,7 +54,7 @@ async def handle_start_command(client, message):
             InlineKeyboardButton("Updates", url="https://codecbots.t.me"),
         ],
         [
-            InlineKeyboardButton("Contact Developer", url="https://drxew.t.me")
+            InlineKeyboardButton("Contact Developer", url="https://t.me/CodecBots/4")
         ]
     ]
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
