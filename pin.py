@@ -18,7 +18,7 @@ from git import Repo, GitCommandError, InvalidGitRepositoryError
 from datetime import datetime
 
 
-SUDOERS = [123456789, 987654321]  # Replace with actual user IDs
+SUDOERS = [1137799257]  
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
