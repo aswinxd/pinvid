@@ -4,7 +4,9 @@ import asyncio
 import aiohttp
 import json
 import logging
+import shutil
 import requests
+from pymongo import MongoClient
 from bs4 import BeautifulSoup
 from pyrogram import Client, filters
 from pyrogram.handlers import MessageHandler
@@ -14,7 +16,7 @@ from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from git import Repo, GitCommandError, InvalidGitRepositoryError
 from datetime import datetime
-import shutil
+
 
 SUDOERS = [123456789, 987654321]  # Replace with actual user IDs
 logging.basicConfig(level=logging.INFO)
@@ -23,17 +25,34 @@ logger = logging.getLogger(__name__)
 API_ID = '12799559'
 API_HASH = '077254e69d93d08357f25bb5f4504580'
 BOT_TOKEN = '6525647702:AAEcBZ4z-nkG161VkOPOQOFsNidoao-jwHw'
+MONGO_URI = 'your_mongodb_connection_uri'
+DATABASE_NAME = 'your_database_name'
+COLLECTION_NAME = 'Pinterest_bot'
 
 app = Client("pinterest_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
-executor = ThreadPoolExecutor(max_workers=100)  
+executor = ThreadPoolExecutor(max_workers=150)  
+client = MongoClient(MONGO_URI)
+db = client[DATABASE_NAME]
+users_collection = db[COLLECTION_NAME]
 
-@app.on_message(filters.command("start"))
+@app.on_message(filters.command("start") & filters.private)
 async def handle_start_command(client, message):
+    logger.info(f"Received /start command from {message.from_user.id}")
+    
+    # Check if the user is already in the database
+    user_id = message.from_user.id
+    if not users_collection.find_one({"user_id": user_id}):
+        users_collection.insert_one({"user_id": user_id})
+    
+    # Get the user count
+    user_count = users_collection.count_documents({})
+    
     instructions = (
         "Welcome! This is **Pinterest Downloader Bot**. This bot can download videos from Pinterest.\n"
         "• Send Pinterest video link, and the bot will download it and send it to you.\n"
         "• If you face any issues, please contact the support chat so developers can fix your issue.\n"
         "• We don't recommend adding this bot to groups even though you can add it and use it in groups.\n"
+        "• Queue request on bot: {user_count}\n"
     )
     buttons = [
         [
@@ -41,7 +60,7 @@ async def handle_start_command(client, message):
             InlineKeyboardButton("Updates", url="https://codecbots.t.me"),
         ],
         [
-            InlineKeyboardButton("Contact Developer", url="https://t.me/CodecBots/4")
+            InlineKeyboardButton("Contact Developer", url="https://drxew.t.me")
         ]
     ]
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
