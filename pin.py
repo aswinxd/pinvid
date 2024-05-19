@@ -45,7 +45,69 @@ async def handle_start_command(client, message):
         ]
     ]
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
+
+@app.on_message(filters.command(["update", "gitpull"]) & filters.user(SUDOERS))
+async def update_(client, message):
+    response = await message.reply_text("Updating the bot...")
+    try:
+        repo = Repo()
+    except GitCommandError:
+        return await response.edit("Git command error.")
+    except InvalidGitRepositoryError:
+        return await response.edit("Invalid Git repository.")
     
+    to_exc = "git fetch origin master &> /dev/null"
+    os.system(to_exc)
+    await asyncio.sleep(7)
+    
+    verification = ""
+    REPO_ = repo.remotes.origin.url.split(".git")[0]
+    for checks in repo.iter_commits("HEAD..origin/master"):
+        verification = str(checks.count())
+    
+    if verification == "":
+        return await response.edit("No updates available.")
+    
+    updates = ""
+    ordinal = lambda format: "%d%s" % (
+        format,
+        "tsnrhtdd"[(format // 10 % 10 != 1) * (format % 10 < 4) * format % 10 :: 4],
+    )
+    
+    for info in repo.iter_commits("HEAD..origin/master"):
+        updates += f"<b>➣ #{info.count()}: <a href={REPO_}/commit/{info}>{info.summary}</a> by -> {info.author}</b>\n\t\t\t\t<b>➥ Committed on :</b> {ordinal(int(datetime.fromtimestamp(info.committed_date).strftime('%d')))} {datetime.fromtimestamp(info.committed_date).strftime('%b')}, {datetime.fromtimestamp(info.committed_date).strftime('%Y')}\n\n"
+    
+    update_response = "<b>A new update is available for the bot!</b>\n\n➣ Pushing updates now\n\n<b><u>Updates:</u></b>\n\n"
+    final_updates = update_response + updates
+    if len(final_updates) > 4096:
+        url = "https://anonybin.org"  # Use AnonyBin or any other paste service
+        nrs = await response.edit(
+            f"<b>A new update is available for the bot!</b>\n\n➣ Pushing updates now\n\n<u><b>Updates :</b></u>\n\n<a href={url}>Check updates</a>"
+        )
+    else:
+        nrs = await response.edit(final_updates, disable_web_page_preview=True)
+    
+    os.system("git stash &> /dev/null && git pull")
+    
+    try:
+        # Add your logic to restart the bot or notify users about the update
+        await response.edit(f"{nrs.text}\n\nBot updated successfully.")
+    except Exception as err:
+        await response.edit(f"{nrs.text}\n\nUpdate failed: {err}")
+
+@app.on_message(filters.command(["restart"]) & filters.user(SUDOERS))
+async def restart_(client, message):
+    response = await message.reply_text("Restarting...")
+    try:
+        shutil.rmtree("downloads")
+        shutil.rmtree("raw_files")
+        shutil.rmtree("cache")
+    except:
+        pass
+    await response.edit_text(
+        "Restart process started, please wait for a few seconds until the bot starts..."
+    )
+    os.system(f"kill -9 {os.getpid()} && bash start")
 
 def expand_shortened_url(url):
     try:
