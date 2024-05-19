@@ -52,7 +52,7 @@ async def handle_start_command(client, message):
         "• Send Pinterest video link, and the bot will download it and send it to you.\n"
         "• If you face any issues, please contact the support chat so developers can fix your issue.\n"
         "• We don't recommend adding this bot to groups even though you can add it and use it in groups.\n"
-        "• Queue request on bot: {user_count}\n"
+        f"• Queue request on bot: {user_count}\n"
     )
     buttons = [
         [
