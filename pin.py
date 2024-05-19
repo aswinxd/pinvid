@@ -134,8 +134,8 @@ async def download_and_send_video(client, message, url):
         await client.send_video(
             chat_id=message.chat.id,
             video=video_io,
-            file_name="video.mp4",  
-            caption="Here is your video!"
+            file_name="pinterest.mp4",  
+            caption="•**__Uploaded By : @PinterestVideoDlBot__**"
         )
         
     except Exception as e:
