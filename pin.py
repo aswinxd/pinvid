@@ -33,7 +33,6 @@ users_collection = db[COLLECTION_NAME]
 
 @app.on_message(filters.command("start") & filters.private)
 async def handle_start_command(client, message):
-    logger.info(f"new user {message.from_user.id}")
     
     user_id = message.from_user.id
     if not users_collection.find_one({"user_id": user_id}):
@@ -78,10 +77,10 @@ async def broadcast_message(client, message):
             broadcast_count += 1
             await asyncio.sleep(0.1)  # To prevent hitting the flood limit
         except FloodWait as e:
-            logger.warning(f"Hit FloodWait for {e.x} seconds.")
+            return
             await asyncio.sleep(e.x)
         except Exception as e:
-            logger.error(f"Error broadcasting to {user['user_id']}: {e}")
+            return
     
     await message.reply_text(f"Broadcast completed. Message sent to {broadcast_count} users.")
 
@@ -89,10 +88,10 @@ def expand_shortened_url(url):
     try:
         response = requests.head(url, allow_redirects=True)
         final_url = response.url
-        logger.info(f"Expanded URL: {final_url}")
+        #logger.info(f"Expanded URL: {fi
         return final_url
     except Exception as e:
-        logger.error(f"Error expanding URL: {e}")
+       # logger.error(f"Error expanding URL: {e}")
         return url
 
 def get_pinterest_video_url(pin_url):
@@ -109,10 +108,10 @@ def get_pinterest_video_url(pin_url):
                 return video_url
         
     except Exception as e:
-        logger.error(f"Error getting Pinterest video URL: {e}")
+        return
     
-    logger.warning("No video URL found.")
-    return None
+    #logger.warning("No video URL found.")
+    #return None
 
 async def fetch_video(session, url):
     async with session.get(url) as response:
@@ -139,7 +138,7 @@ async def download_and_send_video(client, message, url):
         )
         
     except Exception as e:
-        logger.error(f"Error in download_and_send_video: {e}")
+       # logger.error(f"Error in download_and_send_video: {e}")
         await message.reply_text("An error occurred while processing your request.")
     finally:
         await asyncio.sleep(0.1)
@@ -154,10 +153,12 @@ async def handle_message(client, message):
             
             asyncio.create_task(download_and_send_video(client, message, url))
         except FloodWait as e:
-            logger.warning(f"FloodWait error: Waiting for {e.x} seconds")
+            return
+           # logger.warning(f"FloodWait error: Waiting for {e.x} seconds")
             await asyncio.sleep(e.x)
         except Exception as e:
-            logger.error(f"Unhandled error: {e}")
+            return 
+           # logger.error(f"Unhandled error: {e}")
             await message.reply_text("An error occurred while processing your request.")
     else:
         await message.reply_text("Please provide a valid Pinterest video link.")
