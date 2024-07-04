@@ -12,7 +12,7 @@ from pyrogram.handlers import MessageHandler
 from concurrent.futures import ThreadPoolExecutor
 from pyrogram.errors import FloodWait
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
 SUDOERS = [1137799257]  
 logging.basicConfig(level=logging.INFO)
