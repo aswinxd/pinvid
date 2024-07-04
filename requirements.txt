@@ -1,0 +1,5 @@
+aiohttp==3.8.1
+requests==2.31.0
+pymongo==4.5.0
+beautifulsoup4==4.12.2
+pyrogram==2.0.1
