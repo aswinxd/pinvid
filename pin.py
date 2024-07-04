@@ -5,6 +5,7 @@ import aiohttp
 import json
 import logging
 import requests
+from pyrogram import client
 from pymongo import MongoClient
 from bs4 import BeautifulSoup
 from pyrogram import Client, filters
