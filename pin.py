@@ -44,8 +44,8 @@ async def handle_start_command(client, message):
         "Welcome! This is **Pinterest Downloader Bot**. This bot can download videos from Pinterest.\n"
         "• Send Pinterest video link, and the bot will download it and send it to you.\n"
         "• If you face any issues, please contact the support chat so developers can fix your issue.\n"
-        "• We don't recommend adding this bot to groups even though you can add it and use it in groups.\n"
-        f"• Current queue requests on bot: {user_count}\n"
+        "• Use the /privacy command to view the privacy policy, and interact with your data.\n"
+        f"• Number of users on bot: {user_count}\n"
     )
     buttons = [
         [
