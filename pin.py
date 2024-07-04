@@ -63,6 +63,8 @@ async def handle_callback_query(client, callback_query: CallbackQuery):
         back_button = InlineKeyboardMarkup(
             [[InlineKeyboardButton("Back", callback_data="privacy_policy")]]
         )
+         await callback_query.message.edit_text(privacy_responses[data], reply_markup=back_button)
+        
 @app.on_message(filters.command("start") & filters.private)
 async def handle_start_command(client, message):
     
