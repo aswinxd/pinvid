@@ -31,6 +31,7 @@ executor = ThreadPoolExecutor(max_workers=160)
 client = MongoClient(MONGO_URI)
 db = client[DATABASE_NAME]
 users_collection = db[COLLECTION_NAME]
+
 privacy_responses = {
     "info_collect": "We collect the following user data:\n- First Name\n- Last Name\n- Username\n- User ID\n This are public telegram details that everyone can see.",
     "why_collect": "The collected data is used solely for improving your experience with the bot and for processing the bot stats and to avoid spammers.",
