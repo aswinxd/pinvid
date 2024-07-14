@@ -112,9 +112,8 @@ async def broadcast_message(client, message):
         except FloodWait as e:
             await asyncio.sleep(e.x)
         except Exception as e:
-           logger.error(f"Error broadcasting to user {user['user_id']}: {e}")
-    
- await message.reply_text(f"Broadcast completed. Message sent to {broadcast_count} users.")
+            logger.error(f"Error broadcasting to user {user['user_id']}: {e}")
+            await message.reply_text(f"Broadcast completed. Message sent to {broadcast_count} users.")
 
 def expand_shortened_url(url):
     try:
