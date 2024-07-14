@@ -188,8 +188,20 @@ async def handle_message(client, message):
     else:
         await message.reply_text("Please provide a valid Pinterest video link.")
 
+import subprocess
+
+def synchronize_time():
+    try:
+        # Synchronize system time
+        subprocess.run(["sudo", "timedatectl", "set-ntp", "true"], check=True)
+        subprocess.run(["sudo", "ntpdate", "-u", "pool.ntp.org"], check=True)
+        subprocess.run(["sudo", "hwclock", "--systohc"], check=True)
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Time synchronization failed: {e}")
+
 if __name__ == "__main__":
     try:
+        synchronize_time()
         app.run()
     except BadRequest as e:
         logger.error(f"BadRequest error: {e}")
