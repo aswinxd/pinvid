@@ -5,14 +5,11 @@ import aiohttp
 import json
 import logging
 import requests
-from pyrogram import client
+from pyrogram import Client, filters
 from pymongo import MongoClient
 from bs4 import BeautifulSoup
-from pyrogram import Client, filters
-from pyrogram.handlers import MessageHandler
 from concurrent.futures import ThreadPoolExecutor
-from pyrogram.errors import FloodWait
-from pyrogram import Client, filters
+from pyrogram.errors import FloodWait, BadRequest
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
 SUDOERS = [1137799257]  
@@ -27,13 +24,13 @@ DATABASE_NAME = 'Pinterest_bot'
 COLLECTION_NAME = 'users'
 
 app = Client("pinterest_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
-executor = ThreadPoolExecutor(max_workers=160)  
-client = MongoClient(MONGO_URI)
-db = client[DATABASE_NAME]
+executor = ThreadPoolExecutor(max_workers=160)
+mongo_client = MongoClient(MONGO_URI)
+db = mongo_client[DATABASE_NAME]
 users_collection = db[COLLECTION_NAME]
 
 privacy_responses = {
-    "info_collect": "We collect the following user data:\n- First Name\n- Last Name\n- Username\n- User ID\n This are public telegram details that everyone can see.",
+    "info_collect": "We collect the following user data:\n- First Name\n- Last Name\n- Username\n- User ID\n These are public Telegram details that everyone can see.",
     "why_collect": "The collected data is used solely for improving your experience with the bot and for processing the bot stats and to avoid spammers.",
     "what_we_do": "We use the data to personalize your experience and provide better services.",
     "what_we_do_not_do": "We do not share your data with any third parties.",
@@ -58,7 +55,10 @@ async def handle_callback_query(client, callback_query: CallbackQuery):
             [InlineKeyboardButton("What We Do Not Do", callback_data="what_we_do_not_do")],
             [InlineKeyboardButton("Right to Process", callback_data="right_to_process")]
         ]
-        await callback_query.message.edit_text("Our contact details \n Name: PinterestVideoDlBot \n Telegram: https://t.me/CodecArchive \n The bot has been made to protect and preserve privacy as best as possible. \n  Our privacy policy may change from time to time. If we make any material changes to our policies, we will place a prominent notice on https://t.me/CodecBots.", reply_markup=InlineKeyboardMarkup(buttons))
+        await callback_query.message.edit_text(
+            "Our contact details \n Name: PinterestVideoDlBot \n Telegram: https://t.me/CodecArchive \n The bot has been made to protect and preserve privacy as best as possible. \n  Our privacy policy may change from time to time. If we make any material changes to our policies, we will place a prominent notice on https://t.me/CodecBots.", 
+            reply_markup=InlineKeyboardMarkup(buttons)
+        )
     elif data in privacy_responses:
         back_button = InlineKeyboardMarkup(
             [[InlineKeyboardButton("Back", callback_data="privacy_policy")]]
@@ -67,7 +67,6 @@ async def handle_callback_query(client, callback_query: CallbackQuery):
         
 @app.on_message(filters.command("start") & filters.private)
 async def handle_start_command(client, message):
-    
     user_id = message.from_user.id
     if not users_collection.find_one({"user_id": user_id}):
         users_collection.insert_one({"user_id": user_id})
@@ -111,10 +110,9 @@ async def broadcast_message(client, message):
             broadcast_count += 1
             await asyncio.sleep(0.1)  # To prevent hitting the flood limit
         except FloodWait as e:
-            return
             await asyncio.sleep(e.x)
         except Exception as e:
-            return
+            logger.error(f"Error broadcasting to user {user['user_id']}: {e}")
     
     await message.reply_text(f"Broadcast completed. Message sent to {broadcast_count} users.")
 
@@ -122,10 +120,9 @@ def expand_shortened_url(url):
     try:
         response = requests.head(url, allow_redirects=True)
         final_url = response.url
-        #logger.info(f"Expanded URL: {fi
         return final_url
     except Exception as e:
-       # logger.error(f"Error expanding URL: {e}")
+        logger.error(f"Error expanding URL: {e}")
         return url
 
 def get_pinterest_video_url(pin_url):
@@ -140,18 +137,14 @@ def get_pinterest_video_url(pin_url):
                 video_url = json_data['contentUrl']
                 logger.info(f"Found video URL: {video_url}")
                 return video_url
-        
     except Exception as e:
-        return
-    
-    #logger.warning("No video URL found.")
-    #return None
+        logger.error(f"Error getting video URL: {e}")
+    return None
 
 async def fetch_video(session, url):
     async with session.get(url) as response:
         return await response.read()
         
-
 async def download_and_send_video(client, message, url):
     try:
         video_url = await asyncio.get_event_loop().run_in_executor(executor, get_pinterest_video_url, url)
@@ -172,7 +165,7 @@ async def download_and_send_video(client, message, url):
         )
         
     except Exception as e:
-       # logger.error(f"Error in download_and_send_video: {e}")
+        logger.error(f"Error in download_and_send_video: {e}")
         await message.reply_text("An error occurred while processing your request.")
     finally:
         await asyncio.sleep(0.1)
@@ -187,16 +180,18 @@ async def handle_message(client, message):
             
             asyncio.create_task(download_and_send_video(client, message, url))
         except FloodWait as e:
-            return
-           # logger.warning(f"FloodWait error: Waiting for {e.x} seconds")
+            logger.warning(f"FloodWait error: Waiting for {e.x} seconds")
             await asyncio.sleep(e.x)
         except Exception as e:
-            return 
-           # logger.error(f"Unhandled error: {e}")
+            logger.error(f"Unhandled error: {e}")
             await message.reply_text("An error occurred while processing your request.")
     else:
         await message.reply_text("Please provide a valid Pinterest video link.")
 
-
 if __name__ == "__main__":
-    app.run()
+    try:
+        app.run()
+    except BadRequest as e:
+        logger.error(f"BadRequest error: {e}")
+    except Exception as e:
+        logger.error(f"Unhandled exception: {e}")
