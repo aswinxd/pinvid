@@ -137,8 +137,7 @@ def get_pinterest_video_url(pin_url):
             #    logger.info(f"Found video URL: {video_url}")
                 return video_url
     except Exception as e:
-     #   logger.error(f"Error getting video URL: {e}")
-    return None
+        return None
 
 async def fetch_video(session, url):
     async with session.get(url) as response:
