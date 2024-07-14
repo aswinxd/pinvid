@@ -13,8 +13,8 @@ from pyrogram.errors import FloodWait, BadRequest
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
 SUDOERS = [1137799257]  
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+#logging.basicConfig(level=logging.INFO)
+#logger = logging.getLogger(__name__)
 
 API_ID = '12799559'
 API_HASH = '077254e69d93d08357f25bb5f4504580'
@@ -112,7 +112,7 @@ async def broadcast_message(client, message):
         except FloodWait as e:
             await asyncio.sleep(e.x)
         except Exception as e:
-            logger.error(f"Error broadcasting to user {user['user_id']}: {e}")
+        #    logger.error(f"Error broadcasting to user {user['user_id']}: {e}")
     
     await message.reply_text(f"Broadcast completed. Message sent to {broadcast_count} users.")
 
@@ -122,23 +122,23 @@ def expand_shortened_url(url):
         final_url = response.url
         return final_url
     except Exception as e:
-        logger.error(f"Error expanding URL: {e}")
+      #  logger.error(f"Error expanding URL: {e}")
         return url
 
 def get_pinterest_video_url(pin_url):
     try:
         response = requests.get(pin_url, allow_redirects=True)
         soup = BeautifulSoup(response.text, 'html.parser')
-        logger.info(f"Response content: {soup.prettify()[:2000]}") 
+      #  logger.info(f"Response content: {soup.prettify()[:2000]}") 
         for script in soup.find_all('script', type='application/ld+json'):
             json_data = json.loads(script.string)
-            logger.info(f"Found JSON-LD script: {json.dumps(json_data, indent=2)[:1000]}")
+          #  logger.info(f"Found JSON-LD script: {json.dumps(json_data, indent=2)[:1000]}")
             if '@type' in json_data and json_data['@type'] == 'VideoObject':
                 video_url = json_data['contentUrl']
-                logger.info(f"Found video URL: {video_url}")
+            #    logger.info(f"Found video URL: {video_url}")
                 return video_url
     except Exception as e:
-        logger.error(f"Error getting video URL: {e}")
+     #   logger.error(f"Error getting video URL: {e}")
     return None
 
 async def fetch_video(session, url):
@@ -165,7 +165,7 @@ async def download_and_send_video(client, message, url):
         )
         
     except Exception as e:
-        logger.error(f"Error in download_and_send_video: {e}")
+      #  logger.error(f"Error in download_and_send_video: {e}")
         await message.reply_text("An error occurred while processing your request.")
     finally:
         await asyncio.sleep(0.1)
@@ -180,30 +180,13 @@ async def handle_message(client, message):
             
             asyncio.create_task(download_and_send_video(client, message, url))
         except FloodWait as e:
-            logger.warning(f"FloodWait error: Waiting for {e.x} seconds")
+         #   logger.warning(f"FloodWait error: Waiting for {e.x} seconds")
             await asyncio.sleep(e.x)
         except Exception as e:
-            logger.error(f"Unhandled error: {e}")
+          #  logger.error(f"Unhandled error: {e}")
             await message.reply_text("An error occurred while processing your request.")
     else:
         await message.reply_text("Please provide a valid Pinterest video link.")
 
-import subprocess
-
-def synchronize_time():
-    try:
-        # Synchronize system time
-        subprocess.run(["sudo", "timedatectl", "set-ntp", "true"], check=True)
-        subprocess.run(["sudo", "ntpdate", "-u", "pool.ntp.org"], check=True)
-        subprocess.run(["sudo", "hwclock", "--systohc"], check=True)
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Time synchronization failed: {e}")
-
 if __name__ == "__main__":
-    try:
-        synchronize_time()
-        app.run()
-    except BadRequest as e:
-        logger.error(f"BadRequest error: {e}")
-    except Exception as e:
-        logger.error(f"Unhandled exception: {e}")
+    app.run()
