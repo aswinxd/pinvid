@@ -82,7 +82,7 @@ async def handle_start_command(client, message):
     )
     buttons = [
         [
-            InlineKeyboardButton("Visit Website", url=BOT_URL),
+            InlineKeyboardButton("Pinterest downloader Website", url=BOT_URL),
             InlineKeyboardButton("Support Group", url="https://codecarchive.t.me"),
         ],
         [
