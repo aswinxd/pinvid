@@ -57,7 +57,7 @@ async def handle_callback_query(client, callback_query):
             [InlineKeyboardButton("Web App", url=WEBAPP_URL)]
         ]
         await callback_query.message.edit_text(
-            "Our contact details \n Name: PinterestVideoDlBot \n Telegram: https://t.me/CodecArchive \n The bot has been made to protect and preserve privacy as best as possible. \n  Our privacy policy may change from time to time. If we make any material changes to our policies, we will place a prominent notice on https://t.me/CodecBots.", 
+            "Our contact details \n Name: PinterestVideoDlBot \n Telegram: @CodecArchive \n The bot has been made to protect and preserve privacy as best as possible. \n  Our privacy policy may change from time to time. If we make any material changes to our policies, we will place a prominent notice on @CodecBots.", 
             reply_markup=InlineKeyboardMarkup(buttons)
         )
     elif data in privacy_responses:
@@ -80,7 +80,8 @@ async def handle_start_command(client, message):
         "• If you face any issues, please contact the support chat so developers can fix your issue.\n"
         "• Use the /privacy command to view the privacy policy, and interact with your data.\n"
         f"• Number of users on bot: {user_count}\n"
-        "• For more features and better experience, visit our website: [Pinterest Video Downloader]({BOT_URL})"
+        "• For more features and better experience, visit our website: [Pinterest Video Downloader]({BOT_URL}) \n"
+        "• Use Webapp or our website for premium experience and high quality video downloading click below button to use it"
     )
     buttons = [
         [
@@ -92,7 +93,7 @@ async def handle_start_command(client, message):
             InlineKeyboardButton("Contact Developer", url="https://t.me/CodecBots/4")
         ],
         [
-            InlineKeyboardButton("Web App", url=WEBAPP_URL)
+            InlineKeyboardButton("Webapp to use Pinterest downloader website on telegram app", url=WEBAPP_URL)
         ]
     ]
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
