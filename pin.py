@@ -170,8 +170,8 @@ async def download_and_send_video(client, message, url):
             chat_id=message.chat.id,
             video=video_io,
             file_name="PinterestVideoDlBot.mp4",  
-            caption=f"•**__Uploaded By : @PinterestVideoDlBot__**\n\nFor more features, visit our [website]({BOT_URL})",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Web App", url=WEBAPP_URL)]])
+            caption=f"•Uploaded By : @PinterestVideoDlBot.\n •For more features and download without limits, use our [website]({BOT_URL}).\n",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Open website on telegram", url=WEBAPP_URL)]])
         )
         
     except Exception as e:
