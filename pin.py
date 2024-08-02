@@ -79,9 +79,9 @@ async def handle_start_command(client, message):
         "• Send Pinterest video link, and the bot will download it and send it to you.\n"
         "• If you face any issues, please contact the support chat so developers can fix your issue.\n"
         "• Use the /privacy command to view the privacy policy, and interact with your data.\n"
+        "• For more features and better experience, visit our website: [Pinterest Video Downloader]({BOT_URL})\n"
+        "• Use Webapp or our website for premium experience and high quality video downloading click below button to use it.\n"
         f"• Number of users on bot: {user_count}\n"
-        "• For more features and better experience, visit our website: [Pinterest Video Downloader]({BOT_URL}) \n"
-        "• Use Webapp or our website for premium experience and high quality video downloading click below button to use it"
     )
     buttons = [
         [
@@ -93,7 +93,7 @@ async def handle_start_command(client, message):
             InlineKeyboardButton("Contact Developer", url="https://t.me/CodecBots/4")
         ],
         [
-            InlineKeyboardButton("Webapp to use Pinterest downloader website on telegram app", url=WEBAPP_URL)
+            InlineKeyboardButton("Launch Pinterest webapp on telegram", url=WEBAPP_URL)
         ]
     ]
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
