@@ -8,7 +8,7 @@ from pyrogram import Client, filters
 from pymongo import MongoClient
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
-from pyrogram.errors import FloodWait
+from pyrogram.errors import FloodWait, RPCError
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 SUDOERS = [1137799257]
@@ -27,6 +27,7 @@ db = mongo_client[DATABASE_NAME]
 users_collection = db[COLLECTION_NAME]
 
 BOT_URL = "https://pinterestdownloader.xyz"
+WEBAPP_URL = "https://t.me/PinterestVideoDlBot/pinterestdl"
 
 privacy_responses = {
     "info_collect": "We collect the following user data:\n- First Name\n- Last Name\n- Username\n- User ID\n These are public Telegram details that everyone can see.",
@@ -52,7 +53,8 @@ async def handle_callback_query(client, callback_query):
             [InlineKeyboardButton("Why We Collect", callback_data="why_collect")],
             [InlineKeyboardButton("What We Do", callback_data="what_we_do")],
             [InlineKeyboardButton("What We Do Not Do", callback_data="what_we_do_not_do")],
-            [InlineKeyboardButton("Right to Process", callback_data="right_to_process")]
+            [InlineKeyboardButton("Right to Process", callback_data="right_to_process")],
+            [InlineKeyboardButton("Web App", url=WEBAPP_URL)]
         ]
         await callback_query.message.edit_text(
             "Our contact details \n Name: PinterestVideoDlBot \n Telegram: https://t.me/CodecArchive \n The bot has been made to protect and preserve privacy as best as possible. \n  Our privacy policy may change from time to time. If we make any material changes to our policies, we will place a prominent notice on https://t.me/CodecBots.", 
@@ -88,6 +90,9 @@ async def handle_start_command(client, message):
         [
             InlineKeyboardButton("Updates", url="https://codecbots.t.me"),
             InlineKeyboardButton("Contact Developer", url="https://t.me/CodecBots/4")
+        ],
+        [
+            InlineKeyboardButton("Web App", url=WEBAPP_URL)
         ]
     ]
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
@@ -112,8 +117,12 @@ async def broadcast_message(client, message):
             await asyncio.sleep(0.1)  # To prevent hitting the flood limit
         except FloodWait as e:
             await asyncio.sleep(e.x)
+        except RPCError as e:
+            # Handle any other exceptions
+            print(f"Error broadcasting to user {user['user_id']}: {e}")
         except Exception as e:
             await message.reply_text(f"Error broadcasting to user {user['user_id']}: {e}")
+
     await message.reply_text(f"Broadcast completed. Message sent to {broadcast_count} users.")
 
 def expand_shortened_url(url):
@@ -144,7 +153,10 @@ async def download_and_send_video(client, message, url):
     try:
         video_url = await asyncio.get_event_loop().run_in_executor(executor, get_pinterest_video_url, url)
         if not video_url:
-            await message.reply_text(f"Could not find a video at the provided link. For more features, visit our [website]({BOT_URL})", disable_web_page_preview=True)
+            await message.reply_text(
+                f"Could not find a video at the provided link. For more features, visit our [website]({BOT_URL})", 
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Web App", url=WEBAPP_URL)]])
+            )
             return
         
         async with aiohttp.ClientSession() as session:
@@ -156,14 +168,17 @@ async def download_and_send_video(client, message, url):
             chat_id=message.chat.id,
             video=video_io,
             file_name="PinterestVideoDlBot.mp4",  
-            caption=f"•**__Uploaded By : @PinterestVideoDlBot__**\n\nFor more features, visit our [website]({BOT_URL})"
+            caption=f"•**__Uploaded By : @PinterestVideoDlBot__**\n\nFor more features, visit our [website]({BOT_URL})",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Web App", url=WEBAPP_URL)]])
         )
         
     except Exception as e:
-        await message.reply_text(f"An error occurred while processing your request. Please try again later or visit our [website]({BOT_URL})", disable_web_page_preview=True)
+        await message.reply_text(
+            f"An error occurred while processing your request. Please try again later or visit our [website]({BOT_URL})", 
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Web App", url=WEBAPP_URL)]])
+        )
     finally:
         await asyncio.sleep(0.1)
-
 @app.on_message(filters.text & filters.private)
 async def handle_message(client, message):
     url = message.text
