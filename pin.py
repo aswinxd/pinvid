@@ -119,6 +119,7 @@ async def broadcast_message(client, message):
         except FloodWait as e:
             await asyncio.sleep(e.x)
         except RPCError as e:
+            return
             # Handle any other exceptions
            # print(f"Error broadcasting to user {user['user_id']}: {e}")
         except Exception as e:
