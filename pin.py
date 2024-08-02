@@ -120,7 +120,7 @@ async def broadcast_message(client, message):
             await asyncio.sleep(e.x)
         except RPCError as e:
             # Handle any other exceptions
-            print(f"Error broadcasting to user {user['user_id']}: {e}")
+           # print(f"Error broadcasting to user {user['user_id']}: {e}")
         except Exception as e:
             await message.reply_text(f"Error broadcasting to user {user['user_id']}: {e}")
 
