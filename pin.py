@@ -15,7 +15,7 @@ SUDOERS = [1137799257]
 
 API_ID = '12799559'
 API_HASH = '077254e69d93d08357f25bb5f4504580'
-BOT_TOKEN = '6525647702:AAEcBZ4z-nkG161VkOPOQOFsNidoao-jwHw'
+BOT_TOKEN = '6525647702:AAEsJ5DYNulz3nwQKQPS57sKVT_mnuEzRRo'
 MONGO_URI = 'mongodb+srv://bot:bot@cluster0.8vepzds.mongodb.net/?retryWrites=true&w=majority'
 DATABASE_NAME = 'Pinterest_bot'
 COLLECTION_NAME = 'users'
