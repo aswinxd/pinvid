@@ -28,6 +28,7 @@ users_collection = db[COLLECTION_NAME]
 
 BOT_URL = "https://pinterestdownloader.xyz"
 WEBAPP_URL = "https://t.me/PinterestVideoDlBot/pinterestdl"
+REQUIRED_CHANNEL = "@codecbots"
 
 privacy_responses = {
     "info_collect": "We collect the following user data:\n- First Name\n- Last Name\n- Username\n- User ID\n These are public Telegram details that everyone can see.",
@@ -36,6 +37,13 @@ privacy_responses = {
     "what_we_do_not_do": "We do not share your data with any third parties.",
     "right_to_process": "You have the right to access, correct, or delete your data. [Contact us](t.me/drxew) for any privacy-related inquiries."
 }
+
+async def check_subscription(user_id):
+    try:
+        member = await app.get_chat_member(REQUIRED_CHANNEL, user_id)
+        return member.status in ["member", "administrator", "creator"]
+    except:
+        return False
 
 @app.on_message(filters.command("privacy"))
 async def privacy_command(client, message):
@@ -69,34 +77,54 @@ async def handle_callback_query(client, callback_query):
 @app.on_message(filters.command("start") & filters.private)
 async def handle_start_command(client, message):
     user_id = message.from_user.id
+    is_subscribed = await check_subscription(user_id)
+    if not is_subscribed:
+        buttons = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton("Join Channel", url=f"https://t.me/{REQUIRED_CHANNEL.replace('@', '')}")
+                ],
+                [
+                    InlineKeyboardButton("Check Again", callback_data="check_subscription")
+                ]
+            ]
+        )
+        await message.reply_text(
+            "You must join our channel to use this bot. Please subscribe and then click the button below to continue.",
+            reply_markup=buttons
+        )
+        return 
     if not users_collection.find_one({"user_id": user_id}):
         users_collection.insert_one({"user_id": user_id})
     
     user_count = users_collection.count_documents({})
     
     instructions = (
-        "Welcome! This is **Pinterest Downloader Bot**. This bot can download videos from Pinterest.\n"
-        "• Send Pinterest video link, and the bot will download it and send it to you.\n"
-        "• If you face any issues, please contact the support chat so developers can fix your issue.\n"
-        "• Use the /privacy command to view the privacy policy, and interact with your data.\n"
-        "• For more features and better experience, visit our website: [Pinterest Video Downloader]({BOT_URL})\n"
-        "• Use Webapp or our website for premium experience and high quality video downloading click below button to use it.\n"
+        f"Welcome! This is **Pinterest Downloader Bot**. This bot can download videos from Pinterest.\n"
+        f"• Send Pinterest video link, and the bot will download it and send it to you.\n"
         f"• Number of users on bot: {user_count}\n"
     )
     buttons = [
-        [
-            InlineKeyboardButton("Pinterest downloader Website", url=BOT_URL),
-            InlineKeyboardButton("Support Group", url="https://codecarchive.t.me"),
-        ],
-        [
-            InlineKeyboardButton("Updates", url="https://codecbots.t.me"),
-            InlineKeyboardButton("Contact Developer", url="https://t.me/CodecBots/4")
-        ],
-        [
-            InlineKeyboardButton("Launch Pinterest webapp on telegram", url=WEBAPP_URL)
-        ]
+        [InlineKeyboardButton("Pinterest downloader Website", url=BOT_URL)],
+        [InlineKeyboardButton("Support Group", url="https://codecarchive.t.me")],
+        [InlineKeyboardButton("Updates", url="https://codecbots.t.me")],
+        [InlineKeyboardButton("Launch Pinterest webapp on telegram", url=WEBAPP_URL)]
     ]
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
+
+@app.on_callback_query(filters.regex("check_subscription"))
+async def handle_subscription_check(client, callback_query):
+    user_id = callback_query.from_user.id
+    is_subscribed = await check_subscription(user_id)
+    
+    if is_subscribed:
+        await callback_query.message.edit_text(
+            "Thank you for subscribing! You can now use the bot."
+        )
+    else:
+        await callback_query.answer(
+            "You haven't subscribed yet. Please subscribe to the channel first.", show_alert=True
+        )
 
 @app.on_message(filters.command("broadcast") & filters.user(SUDOERS))
 async def broadcast_message(client, message):
@@ -115,13 +143,11 @@ async def broadcast_message(client, message):
         try:
             await client.send_message(user['user_id'], broadcast_message)
             broadcast_count += 1
-            await asyncio.sleep(0.1)  # To prevent hitting the flood limit
+            await asyncio.sleep(0.1) 
         except FloodWait as e:
             await asyncio.sleep(e.x)
         except RPCError as e:
             return
-            # Handle any other exceptions
-           # print(f"Error broadcasting to user {user['user_id']}: {e}")
         except Exception as e:
             await message.reply_text(f"Error broadcasting to user {user['user_id']}: {e}")
 
@@ -181,6 +207,7 @@ async def download_and_send_video(client, message, url):
         )
     finally:
         await asyncio.sleep(0.1)
+
 @app.on_message(filters.text & filters.private)
 async def handle_message(client, message):
     url = message.text
