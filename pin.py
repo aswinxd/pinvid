@@ -155,11 +155,7 @@ async def handle_subscription_check(client, callback_query):
             "You haven't joined the channel yet. Please join the channel first.", show_alert=True
         )
 
-# Save the updated file with force subscription logic integrated
-with open(pin_file_path, 'w') as file:
-    file.write(pin_code)  # Saving updated code
 
-pin_file_path
 
 @app.on_message(filters.command("broadcast") & filters.user(SUDOERS))
 async def broadcast_message(client, message):
