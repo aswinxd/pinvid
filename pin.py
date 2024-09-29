@@ -28,7 +28,7 @@ users_collection = db[COLLECTION_NAME]
 
 BOT_URL = "https://pinterestdownloader.xyz"
 WEBAPP_URL = "https://t.me/PinterestVideoDlBot/pinterestdl"
-REQUIRED_CHANNEL = "codecbots"
+REQUIRED_CHANNEL = "codecbots"  # Replace with your actual channel name
 
 privacy_responses = {
     "info_collect": "We collect the following user data:\n- First Name\n- Last Name\n- Username\n- User ID\n These are public Telegram details that everyone can see.",
@@ -40,12 +40,17 @@ privacy_responses = {
 
 async def check_subscription(user_id):
     try:
+        # Try to check if the user is a participant in the channel
         member = await app.get_chat_member(REQUIRED_CHANNEL, user_id)
-        # Check if the user is a member, admin, or the creator of the channel
+        # If the user is a member, admin, or creator of the channel, return True
         return member.status in ["member", "administrator", "creator"]
     except Exception as e:
-        # Log any errors (optional) and return False to indicate the user isn't subscribed
-        print(f"Error checking subscription: {e}")
+        # If the error is that the user is not a participant, handle it specifically
+        if "USER_NOT_PARTICIPANT" in str(e):
+            print(f"User {user_id} is not a participant in the channel.")
+        else:
+            # Log any other unexpected errors
+            print(f"Error checking subscription: {e}")
         return False
 
 @app.on_message(filters.command("privacy"))
@@ -80,8 +85,11 @@ async def handle_callback_query(client, callback_query):
 @app.on_message(filters.command("start") & filters.private)
 async def handle_start_command(client, message):
     user_id = message.from_user.id
+    
+    # Check if the user is subscribed to the channel
     is_subscribed = await check_subscription(user_id)
     if not is_subscribed:
+        # If not subscribed, send a message with a subscription button
         buttons = InlineKeyboardMarkup(
             [
                 [
@@ -96,7 +104,9 @@ async def handle_start_command(client, message):
             "You must join our channel to use this bot. Please subscribe and then click the button below to continue.",
             reply_markup=buttons
         )
-        return 
+        return  # Stop further execution until the user subscribes
+    
+    # If subscribed, proceed with the normal flow
     if not users_collection.find_one({"user_id": user_id}):
         users_collection.insert_one({"user_id": user_id})
     
@@ -118,6 +128,10 @@ async def handle_start_command(client, message):
 @app.on_callback_query(filters.regex("check_subscription"))
 async def handle_subscription_check(client, callback_query):
     user_id = callback_query.from_user.id
+    
+    # Add a small delay before checking the subscription
+    await asyncio.sleep(2)
+    
     is_subscribed = await check_subscription(user_id)
     
     if is_subscribed:
@@ -146,7 +160,7 @@ async def broadcast_message(client, message):
         try:
             await client.send_message(user['user_id'], broadcast_message)
             broadcast_count += 1
-            await asyncio.sleep(0.1) 
+            await asyncio.sleep(0.1)  # To prevent hitting the flood limit
         except FloodWait as e:
             await asyncio.sleep(e.x)
         except RPCError as e:
