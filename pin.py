@@ -28,7 +28,7 @@ users_collection = db[COLLECTION_NAME]
 
 BOT_URL = "https://pinterestdownloader.xyz"
 WEBAPP_URL = "https://t.me/PinterestVideoDlBot/pinterestdl"
-REQUIRED_CHANNEL = "codecbots"  # Replace with your actual channel name
+#REQUIRED_CHANNEL = "codecbots"  # Replace with your actual channel name
 
 privacy_responses = {
     "info_collect": "We collect the following user data:\n- First Name\n- Last Name\n- Username\n- User ID\n These are public Telegram details that everyone can see.",
@@ -82,30 +82,43 @@ async def handle_callback_query(client, callback_query):
         )
         await callback_query.message.edit_text(privacy_responses[data], reply_markup=back_button)
 
+
+# Define the required channel ID and username for force subscription
+REQUIRED_CHANNEL_ID = -1002068251462  # Example channel ID (Replace with actual)
+REQUIRED_CHANNEL_USERNAME = "codecbots"  # Replace with actual channel username
+
+# Force subscription check function
+async def check_user_subscription(user_id):
+    try:
+        # Check if the user is a participant in the public channel using the channel ID
+        member = await app.get_chat_member(REQUIRED_CHANNEL_ID, user_id)
+        # If the user is a member, admin, or creator of the channel
+        return member.status in ["member", "administrator", "creator"]
+    except UserNotParticipant:
+        return False
+    except Exception as e:
+        print(f"Error checking subscription: {e}")
+        return False
+
+# Updating /start command to check subscription
 @app.on_message(filters.command("start") & filters.private)
 async def handle_start_command(client, message):
     user_id = message.from_user.id
+
+    # Check if the user is subscribed
+    is_subscribed = await check_user_subscription(user_id)
     
-    # Check if the user is subscribed to the channel
-    is_subscribed = await check_subscription(user_id)
     if not is_subscribed:
-        # If not subscribed, send a message with a subscription button
-        buttons = InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton("Join Channel", url=f"https://t.me/{REQUIRED_CHANNEL.replace('@', '')}")
-                ],
-                [
-                    InlineKeyboardButton("Check Again", callback_data="check_subscription")
-                ]
-            ]
-        )
+        buttons = [
+            [InlineKeyboardButton("Join Channel", url=f"https://t.me/{REQUIRED_CHANNEL_USERNAME.replace('@', '')}")],
+            [InlineKeyboardButton("Check Again", callback_data="check_subscription")]
+        ]
         await message.reply_text(
-            "You must join our channel to use this bot. Please subscribe and then click the button below to continue.",
-            reply_markup=buttons
+            "You need to join the channel before using this bot. Please join the channel and then press 'Check Again'.",
+            reply_markup=InlineKeyboardMarkup(buttons)
         )
-        return  # Stop further execution until the user subscribes
-    
+        return
+
     # If subscribed, proceed with the normal flow
     if not users_collection.find_one({"user_id": user_id}):
         users_collection.insert_one({"user_id": user_id})
@@ -125,6 +138,7 @@ async def handle_start_command(client, message):
     ]
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
 
+# Handling subscription check callback
 @app.on_callback_query(filters.regex("check_subscription"))
 async def handle_subscription_check(client, callback_query):
     user_id = callback_query.from_user.id
@@ -132,16 +146,20 @@ async def handle_subscription_check(client, callback_query):
     # Add a small delay before checking the subscription
     await asyncio.sleep(2)
     
-    is_subscribed = await check_subscription(user_id)
+    is_subscribed = await check_user_subscription(user_id)
     
     if is_subscribed:
-        await callback_query.message.edit_text(
-            "Thank you for subscribing! You can now use the bot."
-        )
+        await callback_query.message.edit_text("Thank you for subscribing! You can now use the bot.")
     else:
         await callback_query.answer(
-            "You haven't subscribed yet. Please subscribe to the channel first.", show_alert=True
+            "You haven't joined the channel yet. Please join the channel first.", show_alert=True
         )
+
+# Save the updated file with force subscription logic integrated
+with open(pin_file_path, 'w') as file:
+    file.write(pin_code)  # Saving updated code
+
+pin_file_path
 
 @app.on_message(filters.command("broadcast") & filters.user(SUDOERS))
 async def broadcast_message(client, message):
