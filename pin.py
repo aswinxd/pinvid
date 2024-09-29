@@ -8,9 +8,9 @@ from pyrogram import Client, filters
 from pymongo import MongoClient
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
-from pyrogram.errors import FloodWait, RPCError
+from pyrogram.errors import FloodWait, RPCError, UserNotParticipant
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from pyrogram.errors import UserNotParticipant
+
 SUDOERS = [1137799257]
 
 API_ID = '12799559'
@@ -28,7 +28,8 @@ users_collection = db[COLLECTION_NAME]
 
 BOT_URL = "https://pinterestdownloader.xyz"
 WEBAPP_URL = "https://t.me/PinterestVideoDlBot/pinterestdl"
-#REQUIRED_CHANNEL = "codecbots"  # Replace with your actual channel name
+
+CHANNEL_ID = "@codecbots"  # Replace with your channel's username
 
 privacy_responses = {
     "info_collect": "We collect the following user data:\n- First Name\n- Last Name\n- Username\n- User ID\n These are public Telegram details that everyone can see.",
@@ -38,7 +39,16 @@ privacy_responses = {
     "right_to_process": "You have the right to access, correct, or delete your data. [Contact us](t.me/drxew) for any privacy-related inquiries."
 }
 
-
+async def check_user_membership(client, user_id):
+    try:
+        chat_member = await client.get_chat_member(CHANNEL_ID, user_id)
+        if chat_member.status in ["member", "administrator", "creator"]:
+            return True
+        return False
+    except UserNotParticipant:
+        return False
+    except Exception as e:
+        return False
 
 @app.on_message(filters.command("privacy"))
 async def privacy_command(client, message):
@@ -69,76 +79,47 @@ async def handle_callback_query(client, callback_query):
         )
         await callback_query.message.edit_text(privacy_responses[data], reply_markup=back_button)
 
-
-# Define the required channel ID and username for force subscription
-REQUIRED_CHANNEL_ID = -1002068251462  # Example channel ID (Replace with actual)
-REQUIRED_CHANNEL_USERNAME = "codecbots"  # Replace with actual channel username
-
-async def check_user_subscription(user_id):
-    try:
-        member = await app.get_chat_member(REQUIRED_CHANNEL_ID, user_id)
-        return member.status in ["member", "administrator", "creator"]
-    except UserNotParticipant:
-        return False
-    except Exception as e:
-        print(f"Error checking subscription: {e}")
-        return False
-# Updating /start command to check subscription
 @app.on_message(filters.command("start") & filters.private)
 async def handle_start_command(client, message):
     user_id = message.from_user.id
 
-    # Check if the user is subscribed
-    is_subscribed = await check_user_subscription(user_id)
-    
-    if not is_subscribed:
-        buttons = [
-            [InlineKeyboardButton("Join Channel", url=f"https://t.me/{REQUIRED_CHANNEL_USERNAME.replace('@', '')}")],
-            [InlineKeyboardButton("Check Again", callback_data="check_subscription")]
-        ]
+    # Check if the user is a member of the required channel
+    is_member = await check_user_membership(client, user_id)
+    if not is_member:
         await message.reply_text(
-            "You need to join the channel before using this bot. Please join the channel and then press 'Check Again'.",
-            reply_markup=InlineKeyboardMarkup(buttons)
+            f"You need to join [@codecbots]({CHANNEL_ID}) to use this bot.",
+            disable_web_page_preview=True
         )
-        return
+        return  # Stop further execution if not a member
 
-    # If subscribed, proceed with the normal flow
+    # Add user to the database if not already there
     if not users_collection.find_one({"user_id": user_id}):
         users_collection.insert_one({"user_id": user_id})
-    
+
     user_count = users_collection.count_documents({})
-    
+
     instructions = (
-        f"Welcome! This is **Pinterest Downloader Bot**. This bot can download videos from Pinterest.\n"
-        f"• Send Pinterest video link, and the bot will download it and send it to you.\n"
+        "Welcome! This is **Pinterest Downloader Bot**. This bot can download videos from Pinterest.\n"
+        "• Send Pinterest video link, and the bot will download it and send it to you.\n"
+        "• If you face any issues, please contact the support chat so developers can fix your issue.\n"
+        "• Use the /privacy command to view the privacy policy, and interact with your data.\n"
+        "• For more features and better experience, visit our website: [Pinterest Video Downloader]({BOT_URL})\n"
         f"• Number of users on bot: {user_count}\n"
     )
     buttons = [
-        [InlineKeyboardButton("Pinterest downloader Website", url=BOT_URL)],
-        [InlineKeyboardButton("Support Group", url="https://codecarchive.t.me")],
-        [InlineKeyboardButton("Updates", url="https://codecbots.t.me")],
-        [InlineKeyboardButton("Launch Pinterest webapp on telegram", url=WEBAPP_URL)]
+        [
+            InlineKeyboardButton("Pinterest downloader Website", url=BOT_URL),
+            InlineKeyboardButton("Support Group", url="https://codecarchive.t.me"),
+        ],
+        [
+            InlineKeyboardButton("Updates", url="https://codecbots.t.me"),
+            InlineKeyboardButton("Contact Developer", url="https://t.me/CodecBots/4")
+        ],
+        [
+            InlineKeyboardButton("Launch Pinterest webapp on telegram", url=WEBAPP_URL)
+        ]
     ]
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
-
-# Handling subscription check callback
-@app.on_callback_query(filters.regex("check_subscription"))
-async def handle_subscription_check(client, callback_query):
-    user_id = callback_query.from_user.id
-    
-    # Add a small delay before checking the subscription
-    await asyncio.sleep(2)
-    
-    is_subscribed = await check_user_subscription(user_id)
-    
-    if is_subscribed:
-        await callback_query.message.edit_text("Thank you for subscribing! You can now use the bot.")
-    else:
-        await callback_query.answer(
-            "You haven't joined the channel yet. Please join the channel first.", show_alert=True
-        )
-
-
 
 @app.on_message(filters.command("broadcast") & filters.user(SUDOERS))
 async def broadcast_message(client, message):
@@ -224,6 +205,17 @@ async def download_and_send_video(client, message, url):
 
 @app.on_message(filters.text & filters.private)
 async def handle_message(client, message):
+    user_id = message.from_user.id
+
+    # Check if the user is a member of the required channel
+    is_member = await check_user_membership(client, user_id)
+    if not is_member:
+        await message.reply_text(
+            f"You need to join [@codecbots]({CHANNEL_ID}) to use this bot.",
+            disable_web_page_preview=True
+        )
+        return  # Stop further execution if not a member
+
     url = message.text
     if "pinterest.com" in url or "pin.it" in url:
         try:
