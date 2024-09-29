@@ -41,8 +41,11 @@ privacy_responses = {
 async def check_subscription(user_id):
     try:
         member = await app.get_chat_member(REQUIRED_CHANNEL, user_id)
+        # Check if the user is a member, admin, or the creator of the channel
         return member.status in ["member", "administrator", "creator"]
-    except:
+    except Exception as e:
+        # Log any errors (optional) and return False to indicate the user isn't subscribed
+        print(f"Error checking subscription: {e}")
         return False
 
 @app.on_message(filters.command("privacy"))
