@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
 from pyrogram.errors import FloodWait, RPCError
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-
+from pyrogram.errors import UserNotParticipant
 SUDOERS = [1137799257]
 
 API_ID = '12799559'
@@ -38,20 +38,7 @@ privacy_responses = {
     "right_to_process": "You have the right to access, correct, or delete your data. [Contact us](t.me/drxew) for any privacy-related inquiries."
 }
 
-async def check_subscription(user_id):
-    try:
-        # Try to check if the user is a participant in the channel
-        member = await app.get_chat_member(REQUIRED_CHANNEL, user_id)
-        # If the user is a member, admin, or creator of the channel, return True
-        return member.status in ["member", "administrator", "creator"]
-    except Exception as e:
-        # If the error is that the user is not a participant, handle it specifically
-        if "USER_NOT_PARTICIPANT" in str(e):
-            print(f"User {user_id} is not a participant in the channel.")
-        else:
-            # Log any other unexpected errors
-            print(f"Error checking subscription: {e}")
-        return False
+
 
 @app.on_message(filters.command("privacy"))
 async def privacy_command(client, message):
@@ -87,19 +74,15 @@ async def handle_callback_query(client, callback_query):
 REQUIRED_CHANNEL_ID = -1002068251462  # Example channel ID (Replace with actual)
 REQUIRED_CHANNEL_USERNAME = "codecbots"  # Replace with actual channel username
 
-# Force subscription check function
 async def check_user_subscription(user_id):
     try:
-        # Check if the user is a participant in the public channel using the channel ID
         member = await app.get_chat_member(REQUIRED_CHANNEL_ID, user_id)
-        # If the user is a member, admin, or creator of the channel
         return member.status in ["member", "administrator", "creator"]
     except UserNotParticipant:
         return False
     except Exception as e:
         print(f"Error checking subscription: {e}")
         return False
-
 # Updating /start command to check subscription
 @app.on_message(filters.command("start") & filters.private)
 async def handle_start_command(client, message):
