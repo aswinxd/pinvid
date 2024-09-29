@@ -28,7 +28,7 @@ users_collection = db[COLLECTION_NAME]
 
 BOT_URL = "https://pinterestdownloader.xyz"
 WEBAPP_URL = "https://t.me/PinterestVideoDlBot/pinterestdl"
-REQUIRED_CHANNEL = "@codecbots"
+REQUIRED_CHANNEL = "codecbots"
 
 privacy_responses = {
     "info_collect": "We collect the following user data:\n- First Name\n- Last Name\n- Username\n- User ID\n These are public Telegram details that everyone can see.",
