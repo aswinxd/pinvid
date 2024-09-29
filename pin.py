@@ -34,7 +34,15 @@ userbot = Client("userbot", api_id=API_ID, api_hash=API_HASH)
 
 async def check_user_membership(user_id):
     try:
-        # Use the userbot to check if the user is in the channel
+        # First, make sure the userbot is a member of the channel
+        try:
+            chat_member = await userbot.get_chat_member(CHANNEL_ID, userbot.me.id)
+        except UserNotParticipant:
+            print(f"Userbot is not a member of {CHANNEL_ID}. Joining now...")
+            await userbot.join_chat(CHANNEL_ID)  # Userbot joins the channel
+            print(f"Userbot joined {CHANNEL_ID}.")
+        
+        # Now check if the user is a member of the channel
         chat_member = await userbot.get_chat_member(CHANNEL_ID, user_id)
         print(chat_member)  # Optional logging for debugging
 
