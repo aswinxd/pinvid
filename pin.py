@@ -8,17 +8,17 @@ from pyrogram import Client, filters
 from pymongo import MongoClient
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
-from pyrogram.errors import FloodWait, RPCError, UserNotParticipant
+from pyrogram.errors import FloodWait, RPCError
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-# Replace these values with your own credentials
+SUDOERS = [1137799257]
+
 API_ID = '12799559'
 API_HASH = '077254e69d93d08357f25bb5f4504580'
 BOT_TOKEN = '6525647702:AAEsJ5DYNulz3nwQKQPS57sKVT_mnuEzRRo'
 MONGO_URI = 'mongodb://bot:bot@cluster0.8vepzds.mongodb.net/?retryWrites=true&w=majority'
 DATABASE_NAME = 'Pinterest_bot'
 COLLECTION_NAME = 'users'
-CHANNEL_ID = "@codecbots"  # Replace with your channel's username
 
 app = Client("pinterest_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 executor = ThreadPoolExecutor(max_workers=160)
@@ -29,55 +29,58 @@ users_collection = db[COLLECTION_NAME]
 BOT_URL = "https://pinterestdownloader.xyz"
 WEBAPP_URL = "https://t.me/PinterestVideoDlBot/pinterestdl"
 
-# Initialize the userbot client
-userbot = Client("userbot", api_id=API_ID, api_hash=API_HASH)
+privacy_responses = {
+    "info_collect": "We collect the following user data:\n- First Name\n- Last Name\n- Username\n- User ID\n These are public Telegram details that everyone can see.",
+    "why_collect": "The collected data is used solely for improving your experience with the bot and for processing the bot stats and to avoid spammers.",
+    "what_we_do": "We use the data to personalize your experience and provide better services.",
+    "what_we_do_not_do": "We do not share your data with any third parties.",
+    "right_to_process": "You have the right to access, correct, or delete your data. [Contact us](t.me/drxew) for any privacy-related inquiries."
+}
 
-async def check_user_membership(user_id):
-    try:
-        # First, make sure the userbot is a member of the channel
-        try:
-            chat_member = await userbot.get_chat_member(CHANNEL_ID, userbot.me.id)
-        except UserNotParticipant:
-            print(f"Userbot is not a member of {CHANNEL_ID}. Joining now...")
-            await userbot.join_chat(CHANNEL_ID)  # Userbot joins the channel
-            print(f"Userbot joined {CHANNEL_ID}.")
-        
-        # Now check if the user is a member of the channel
-        chat_member = await userbot.get_chat_member(CHANNEL_ID, user_id)
-        print(chat_member)  # Optional logging for debugging
+@app.on_message(filters.command("privacy"))
+async def privacy_command(client, message):
+    privacy_button = InlineKeyboardMarkup(
+        [[InlineKeyboardButton("Privacy Policy", callback_data="privacy_policy")]]
+    )
+    await message.reply_text("Select one of the below options for more information about how the bot handles your privacy.", reply_markup=privacy_button)
 
-        if chat_member.status in ["member", "administrator", "creator"]:
-            return True
-        return False
-    except Exception as e:
-        print(f"Error checking membership via userbot: {e}")
-        return False
+@app.on_callback_query()
+async def handle_callback_query(client, callback_query):
+    data = callback_query.data
+    if data == "privacy_policy":
+        buttons = [
+            [InlineKeyboardButton("What Information We Collect", callback_data="info_collect")],
+            [InlineKeyboardButton("Why We Collect", callback_data="why_collect")],
+            [InlineKeyboardButton("What We Do", callback_data="what_we_do")],
+            [InlineKeyboardButton("What We Do Not Do", callback_data="what_we_do_not_do")],
+            [InlineKeyboardButton("Right to Process", callback_data="right_to_process")],
+            [InlineKeyboardButton("Web App", url=WEBAPP_URL)]
+        ]
+        await callback_query.message.edit_text(
+            "Our contact details \n Name: PinterestVideoDlBot \n Telegram: @CodecArchive \n The bot has been made to protect and preserve privacy as best as possible. \n  Our privacy policy may change from time to time. If we make any material changes to our policies, we will place a prominent notice on @CodecBots.", 
+            reply_markup=InlineKeyboardMarkup(buttons)
+        )
+    elif data in privacy_responses:
+        back_button = InlineKeyboardMarkup(
+            [[InlineKeyboardButton("Back", callback_data="privacy_policy")]]
+        )
+        await callback_query.message.edit_text(privacy_responses[data], reply_markup=back_button)
 
 @app.on_message(filters.command("start") & filters.private)
 async def handle_start_command(client, message):
     user_id = message.from_user.id
-
-    # Check if the user is a member of the required channel using the userbot
-    is_member = await check_user_membership(user_id)
-    if not is_member:
-        await message.reply_text(
-            f"You need to join [@codecbots]({CHANNEL_ID}) to use this bot.",
-            disable_web_page_preview=True
-        )
-        return  # Stop further execution if not a member
-
-    # Add user to the database if not already there
     if not users_collection.find_one({"user_id": user_id}):
         users_collection.insert_one({"user_id": user_id})
-
+    
     user_count = users_collection.count_documents({})
-
+    
     instructions = (
         "Welcome! This is **Pinterest Downloader Bot**. This bot can download videos from Pinterest.\n"
         "• Send Pinterest video link, and the bot will download it and send it to you.\n"
         "• If you face any issues, please contact the support chat so developers can fix your issue.\n"
         "• Use the /privacy command to view the privacy policy, and interact with your data.\n"
         "• For more features and better experience, visit our website: [Pinterest Video Downloader]({BOT_URL})\n"
+        "• Use Webapp or our website for premium experience and high quality video downloading click below button to use it.\n"
         f"• Number of users on bot: {user_count}\n"
     )
     buttons = [
@@ -95,34 +98,7 @@ async def handle_start_command(client, message):
     ]
     await message.reply_text(instructions, reply_markup=InlineKeyboardMarkup(buttons))
 
-@app.on_message(filters.text & filters.private)
-async def handle_message(client, message):
-    user_id = message.from_user.id
-
-    # Check if the user is a member of the required channel using the userbot
-    is_member = await check_user_membership(user_id)
-    if not is_member:
-        await message.reply_text(
-            f"You need to join [@codecbots]({CHANNEL_ID}) to use this bot.",
-            disable_web_page_preview=True
-        )
-        return  # Stop further execution if not a member
-
-    url = message.text
-    if "pinterest.com" in url or "pin.it" in url:
-        try:
-            if "pin.it" in url:
-                url = await asyncio.get_event_loop().run_in_executor(executor, expand_shortened_url, url)
-            
-            asyncio.create_task(download_and_send_video(client, message, url))
-        except FloodWait as e:
-            await asyncio.sleep(e.x)
-        except Exception as e:
-            await message.reply_text(f"An error occurred while processing your request. Please try again later or visit our [website]({BOT_URL})", disable_web_page_preview=True)
-    else:
-        await message.reply_text(f"Please provide a valid Pinterest video link. For more features, visit our [website]({BOT_URL})", disable_web_page_preview=True)
-
-@app.on_message(filters.command("broadcast") & filters.user([1137799257]))  # Add your user ID to SUDOERS
+@app.on_message(filters.command("broadcast") & filters.user(SUDOERS))
 async def broadcast_message(client, message):
     if message.reply_to_message:
         broadcast_message = message.reply_to_message.text
@@ -144,12 +120,12 @@ async def broadcast_message(client, message):
             await asyncio.sleep(e.x)
         except RPCError as e:
             return
+            # Handle any other exceptions
+           # print(f"Error broadcasting to user {user['user_id']}: {e}")
         except Exception as e:
             await message.reply_text(f"Error broadcasting to user {user['user_id']}: {e}")
 
     await message.reply_text(f"Broadcast completed. Message sent to {broadcast_count} users.")
-
-# Utility functions
 
 def expand_shortened_url(url):
     try:
@@ -158,6 +134,18 @@ def expand_shortened_url(url):
         return final_url
     except Exception as e:
         return url
+
+def get_pinterest_video_url(pin_url):
+    try:
+        response = requests.get(pin_url, allow_redirects=True)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        for script in soup.find_all('script', type='application/ld+json'):
+            json_data = json.loads(script.string)
+            if '@type' in json_data and json_data['@type'] == 'VideoObject':
+                video_url = json_data['contentUrl']
+                return video_url
+    except Exception as e:
+        return None
 
 async def fetch_video(session, url):
     async with session.get(url) as response:
@@ -193,20 +181,21 @@ async def download_and_send_video(client, message, url):
         )
     finally:
         await asyncio.sleep(0.1)
+@app.on_message(filters.text & filters.private)
+async def handle_message(client, message):
+    url = message.text
+    if "pinterest.com" in url or "pin.it" in url:
+        try:
+            if "pin.it" in url:
+                url = await asyncio.get_event_loop().run_in_executor(executor, expand_shortened_url, url)
+            
+            asyncio.create_task(download_and_send_video(client, message, url))
+        except FloodWait as e:
+            await asyncio.sleep(e.x)
+        except Exception as e:
+            await message.reply_text(f"An error occurred while processing your request. Please try again later or visit our [website]({BOT_URL})", disable_web_page_preview=True)
+    else:
+        await message.reply_text(f"Please provide a valid Pinterest video link. For more features, visit our [website]({BOT_URL})", disable_web_page_preview=True)
 
-def get_pinterest_video_url(pin_url):
-    try:
-        response = requests.get(pin_url, allow_redirects=True)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        for script in soup.find_all('script', type='application/ld+json'):
-            json_data = json.loads(script.string)
-            if '@type' in json_data and json_data['@type'] == 'VideoObject':
-                video_url = json_data['contentUrl']
-                return video_url
-    except Exception as e:
-        return None
-
-# Start both the userbot and the regular bot
 if __name__ == "__main__":
-    userbot.start()
     app.run()
