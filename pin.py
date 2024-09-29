@@ -16,7 +16,7 @@ SUDOERS = [1137799257]
 API_ID = '12799559'
 API_HASH = '077254e69d93d08357f25bb5f4504580'
 BOT_TOKEN = '6525647702:AAEsJ5DYNulz3nwQKQPS57sKVT_mnuEzRRo'
-MONGO_URI = 'mongodb://bot:bot@cluster0.8vepzds.mongodb.net/?retryWrites=true&w=majority'
+MONGO_URI = 'mongodb+srv://mdalizadeh16:lavos@cluster0.u21tcwa.mongodb.net/?retryWrites=true&w=majority'
 DATABASE_NAME = 'Pinterest_bot'
 COLLECTION_NAME = 'users'
 
@@ -81,7 +81,6 @@ async def handle_start_command(client, message):
         "• Use the /privacy command to view the privacy policy, and interact with your data.\n"
         "• For more features and better experience, visit our website: [Pinterest Video Downloader]({BOT_URL})\n"
         "• Use Webapp or our website for premium experience and high quality video downloading click below button to use it.\n"
-        f"• Number of users on bot: {user_count}\n"
     )
     buttons = [
         [
